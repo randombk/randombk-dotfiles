@@ -125,9 +125,6 @@
     changed = yellow bold
     untracked = red bold
 
-[commit]
-    gpgsign = true 
-
 [diff]
 	external = /home/randombk/bin/diff.py
 	tool = meld
@@ -154,3 +151,5 @@
 
 [push]
 	default = simple
+[gpg]
+	program = gpg2
