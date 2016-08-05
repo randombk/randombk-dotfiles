@@ -6,7 +6,7 @@
 
 
 [alias]
-    nicelog = log --pretty=format:'%C(red)%h%C(yellow) %an%Creset %s' "$@"
+    nicelog = log --pretty=format:'%C(red)%h%C(yellow) %an%Creset %s'
     lc = log ORIG_HEAD.. --stat --no-merges
     changes = diff --name-status -r
     diffstat = diff --stat -r
@@ -136,3 +136,6 @@
 
 [difftool]
     prompt = false
+
+[mergetool]
+	keepBackup = false

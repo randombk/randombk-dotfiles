@@ -6,7 +6,7 @@
 
 
 [alias]
-    nicelog = log --pretty=format:'%C(red)%h%C(yellow) %an%Creset %s' "$@"
+    nicelog = log --pretty=format:'%C(red)%h%C(yellow) %an%Creset %s'
     lc = log ORIG_HEAD.. --stat --no-merges
     changes = diff --name-status -r
     diffstat = diff --stat -r
@@ -139,17 +139,18 @@
 	fixes = Fixes: %h (\"%s\")
 
 [merge]
-    tool = vimdiff
+    tool = meld
     conflictstyle = diff3
     log = true # Summarize merged commits in messages
 
-[guitool "Git Difftool"]
-	cmd = meld
-
-[guitool "Git merge"]
-	cmd = meld
+[mergetool "meld"]
+    cmd = meld --output $MERGED $LOCAL $BASE $REMOTE --diff $LOCAL $BASE --diff $REMOTE $BASE
 
 [push]
-	default = simple
+    default = simple
+
 [gpg]
-	program = gpg2
+    program = gpg2
+
+[mergetool]
+    keepBackup = false
