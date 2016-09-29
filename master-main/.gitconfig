@@ -6,16 +6,25 @@
 
 
 [alias]
+    # Colorful commit log
     nicelog = log --pretty=format:'%C(red)%h%C(yellow) %an%Creset %s'
+
+    # Show line edits
     lc = log ORIG_HEAD.. --stat --no-merges
+
+    # Show changes in working directory
     changes = diff --name-status -r
+
+    # Show stats about changes in working directory
     diffstat = diff --stat -r
-    co = checkout
-    ci = commit
-    st = status
-    br = branch
+
+    # Show commit graph
     hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+
+    # Show type of hash
     type = cat-file -t
+
+    # Dump contents of hash
     dump = cat-file -p
 
     # View abbreviated SHA, description, and history graph of the latest 20 commits
@@ -72,7 +81,6 @@
     fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
 
     # Remove branches that have already been merged with master
-    # a.k.a. ‘delete merged’
     dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 
     # List contributors with number of commits
@@ -81,32 +89,17 @@
     # List orphaned commits
     orphank = !gitk --all `git reflog | cut -c1-7`&
 
-    # Merge GitHub pull request on top of the current branch or,
-    # if a branch name is specified, on top of the specified branch
-    mpr = "!f() { \
-        declare currentBranch=\"$(git symbolic-ref --short HEAD)\"; \
-        declare branch=\"${2:-$currentBranch}\"; \
-        if [ $(printf \"%s\" \"$1\" | grep '^[0-9]\\+$' > /dev/null; printf $?) -eq 0 ]; then \
-            git fetch origin refs/pull/$1/head:pr/$1 && \
-            git checkout -B $branch && \
-            git rebase $branch pr/$1 && \
-            git checkout -B $branch && \
-            git merge pr/$1 && \
-            git branch -D pr/$1 && \
-            git commit --amend -m \"$(git log -1 --pretty=%B)\n\nCloses #$1.\"; \
-        fi \
-    }; f"
 
 [user]
-	name = RandomBK
-	email = david@david-li.com
-	signingkey = DA351167
+    name = RandomBK
+    email = david@david-li.com
+    signingkey = DA351167
 
 [core]
-	autocrlf = input
-	hidedotfiles = true
-	abbrev = 12
-	editor = vim
+    autocrlf = input
+    hidedotfiles = true
+    abbrev = 12
+    editor = vim
 
 [color]
     ui = auto
@@ -129,17 +122,14 @@
     untracked = red bold
 
 [diff]
-	external = /home/randombk/bin/diff.py
-	tool = meld
+    external = /home/randombk/bin/diff.py
+    tool = meld
 
 [help]
     autocorrect = 1 # Autofix mistyped commands
 
-[difftool]
-	prompt = false
-
 [pretty]
-	fixes = Fixes: %h (\"%s\")
+    fixes = Fixes: %h (\"%s\")
 
 [merge]
     tool = meld
@@ -154,6 +144,9 @@
 
 [gpg]
     program = gpg2
+
+[difftool]
+    prompt = false
 
 [mergetool]
     keepBackup = false
