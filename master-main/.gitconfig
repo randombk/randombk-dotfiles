@@ -126,7 +126,7 @@
     tool = meld
 
 [help]
-    autocorrect = 1 # Autofix mistyped commands
+    autocorrect = 50 # Autofix mistyped commands
 
 [pretty]
     fixes = Fixes: %h (\"%s\")

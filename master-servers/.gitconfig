@@ -119,7 +119,7 @@
     untracked = red bold
 
 [help]
-    autocorrect = 1 # Autofix mistyped commands
+    autocorrect = 100 # Autofix mistyped commands
 
 [push]
     default = simple
