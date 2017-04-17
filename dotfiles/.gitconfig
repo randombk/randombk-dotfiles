@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2008-2016 David Jia Wei Li
 #
-# .gitconfig Configuration for Server Users
+# .gitconfig Configuration for Primary Machines
 #
 
 
@@ -32,6 +32,9 @@
 
     # Show commit graph
     hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+
+    # Another version of nicelog
+    ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
 
     # Show type of hash
     type = cat-file -t
@@ -133,7 +136,7 @@
     # From https://gist.github.com/robmiller/6018582
     merge-span = "!f() { echo $(git log -1 $2 --merges --pretty=format:%P | cut -d' ' -f1)$1$(git log -1 $2 --merges --pretty=format:%P | cut -d' ' -f2); }; f"
 
-    # Find the commits that were introduced by a merge
+    # Find commits that introduced by a merge
     merge-log = "!git log `git merge-span .. $1`"
 
     # Show the changes that were introduced by a merge
@@ -180,14 +183,29 @@
     changed = yellow bold
     untracked = red bold
 
+[diff]
+    external = /home/randombk/.bin/melddiff
+    tool = meld
+
 [help]
-    autocorrect = 100 # Autofix mistyped commands
+    autocorrect = 50 # Autofix mistyped commands
+
+[pretty]
+    fixes = Fixes: %h (\"%s\")
+
+[merge]
+    tool = meld
+    conflictstyle = diff3
+    log = true # Summarize merged commits in messages
+
+[mergetool "meld"]
+    cmd = meld --output $MERGED $LOCAL $BASE $REMOTE --diff $LOCAL $BASE --diff $REMOTE $BASE
 
 [push]
     default = simple
 
-[diff]
-    tool = vimdiff
+[gpg]
+    program = gpg2
 
 [difftool]
     prompt = false
