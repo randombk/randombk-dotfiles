@@ -96,7 +96,7 @@
     fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
 
     # Find commits by blob
-    find-blob = "!f() { cd \"$(git rev-parse --show-toplevel)\"; git rev-list --all | xargs -n1 -iX sh -c \"git ls-tree -r X | grep \\\"blob $1\\\" && echo \\\"\\033[1;31mX\\033[0;37m\\\" && echo \"; }; f"
+    find-blob = "!f() { cd \"$(git rev-parse --show-toplevel)\"; git rev-list --all | xargs -n1 -iX sh -c \"git ls-tree -r X | grep \\\"blob $1\\\" && echo \\\"\\033[1;31mX\\033[0;37m\\\" && git dump X && echo && echo \"; }; f"
 
     # Find large objects
     large-objects = "!f() { ( cd \"$(git rev-parse --show-toplevel)/.git/objects\"; find . -type f | xargs du -h --max-depth=0 | sort -h | tail -n ${1:-10}); }; f"
@@ -184,7 +184,6 @@
     untracked = red bold
 
 [diff]
-    external = /home/randombk/.bin/melddiff
     tool = meld
 
 [help]
