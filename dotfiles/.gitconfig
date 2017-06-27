@@ -148,6 +148,10 @@
     # Unstages all files
     unstage = reset HEAD
 
+    # Replacement for git-up
+    up = pull --rebase
+    ups = pull --rebase --autostash
+
     # Show stage
     diffc = diff --cached
 
