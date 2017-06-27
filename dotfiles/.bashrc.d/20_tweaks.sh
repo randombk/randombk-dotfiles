@@ -24,5 +24,8 @@ alias cd..='cd ..'
 alias less='less --RAW-CONTROL-CHARS'
 alias top='htop'
 
+export PAGER="less"
+export VISUAL="vim"
+
 # User-local binaries
 PATH="~/bin:~/.bin:$PATH"
