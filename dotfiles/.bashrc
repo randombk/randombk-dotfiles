@@ -20,8 +20,17 @@ export _islinux=false
 export _isroot=false
 [[ $UID -eq 0 ]] && _isroot=true
 
+# Load bashrc scripts from repo. This directory should be a symlink
 if test -d ~/.bashrc.d/; then
     for bashrc in ~/.bashrc.d/*.sh; do
+        test -r "$bashrc" && . "$bashrc"
+    done
+    unset bashrc
+fi
+
+# If the dlpnetworks releases repo is cloned, also load additional global bashrcs from there
+if test -f ~/dlpnetworks-releases/global-bashrc.d/; then
+    for bashrc in ~/dlpnetworks-releases/global-bashrc.d/*.sh; do
         test -r "$bashrc" && . "$bashrc"
     done
     unset bashrc
