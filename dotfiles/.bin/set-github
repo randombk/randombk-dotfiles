@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$(whoami)" != "randombk" ]; then
+    echo "Script must be run as randombk"
+    exit 1
+fi
+
 if [ ! "${PWD##/home/randombk/dev/opensource}" != "${PWD}" ]
 then
     read -p "Not in open source directory! Are you sure? " -n 1 -r
