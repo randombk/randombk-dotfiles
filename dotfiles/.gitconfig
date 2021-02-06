@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2008-2016 David Jia Wei Li
 #
-# .gitconfig Configuration for Server Users
+# .gitconfig Configuration for Primary Machines
 #
 
 
@@ -32,6 +32,9 @@
 
     # Show commit graph
     hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+
+    # Another version of nicelog
+    ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
 
     # Show type of hash
     type = cat-file -t
@@ -93,7 +96,7 @@
     fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
 
     # Find commits by blob
-    find-blob = "!f() { cd \"$(git rev-parse --show-toplevel)\"; git rev-list --all | xargs -n1 -iX sh -c \"git ls-tree -r X | grep \\\"blob $1\\\" && echo \\\"\\033[1;31mX\\033[0;37m\\\" && echo \"; }; f"
+    find-blob = "!f() { cd \"$(git rev-parse --show-toplevel)\"; git rev-list --all | xargs -n1 -iX sh -c \"git ls-tree -r X | grep \\\"blob $1\\\" && echo \\\"\\033[1;31mX\\033[0;37m\\\" && git dump X && echo && echo \"; }; f"
 
     # Find large objects
     large-objects = "!f() { ( cd \"$(git rev-parse --show-toplevel)/.git/objects\"; find . -type f | xargs du -h --max-depth=0 | sort -h | tail -n ${1:-10}); }; f"
@@ -133,7 +136,7 @@
     # From https://gist.github.com/robmiller/6018582
     merge-span = "!f() { echo $(git log -1 $2 --merges --pretty=format:%P | cut -d' ' -f1)$1$(git log -1 $2 --merges --pretty=format:%P | cut -d' ' -f2); }; f"
 
-    # Find the commits that were introduced by a merge
+    # Find commits that introduced by a merge
     merge-log = "!git log `git merge-span .. $1`"
 
     # Show the changes that were introduced by a merge
@@ -144,6 +147,10 @@
 
     # Unstages all files
     unstage = reset HEAD
+
+    # Replacement for git-up
+    up = pull --rebase
+    ups = pull --rebase --autostash
 
     # Show stage
     diffc = diff --cached
@@ -180,14 +187,28 @@
     changed = yellow bold
     untracked = red bold
 
+[diff]
+    tool = meld
+
 [help]
-    autocorrect = 100 # Autofix mistyped commands
+    autocorrect = 50 # Autofix mistyped commands
+
+[pretty]
+    fixes = Fixes: %h (\"%s\")
+
+[merge]
+    tool = meld
+    conflictstyle = diff3
+    log = true # Summarize merged commits in messages
+
+[mergetool "meld"]
+    cmd = meld --output $MERGED $LOCAL $BASE $REMOTE --diff $LOCAL $BASE --diff $REMOTE $BASE
 
 [push]
     default = simple
 
-[diff]
-    tool = vimdiff
+[gpg]
+    program = gpg2
 
 [difftool]
     prompt = false

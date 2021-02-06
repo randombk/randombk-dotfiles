@@ -1,0 +1,2 @@
+#!/bin/sh
+dd if=/dev/random bs=16 count=1 2>/dev/null | xxd -p

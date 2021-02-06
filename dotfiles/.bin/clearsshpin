@@ -1,0 +1,3 @@
+#!/bin/sh
+ssh-keygen -R "$1"
+ssh-keygen -R $(resolveip -s "$1")
