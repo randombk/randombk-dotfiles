@@ -29,7 +29,7 @@ if test -d ~/.bashrc.d/; then
 fi
 
 # If the dlpnetworks releases repo is cloned, also load additional global bashrcs from there
-if test -f ~/dlpnetworks-releases/global-bashrc.d/; then
+if test -d ~/dlpnetworks-releases/global-bashrc.d/; then
     for bashrc in ~/dlpnetworks-releases/global-bashrc.d/*.sh; do
         test -r "$bashrc" && . "$bashrc"
     done
