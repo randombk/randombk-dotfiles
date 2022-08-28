@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export USECONDA=1
+
+bash 
