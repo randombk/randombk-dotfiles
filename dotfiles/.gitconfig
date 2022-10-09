@@ -206,6 +206,7 @@
 
 [push]
     default = simple
+    autoSetupRemote = true
 
 [gpg]
     program = gpg2
