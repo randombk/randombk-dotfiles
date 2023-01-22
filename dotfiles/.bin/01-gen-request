@@ -1,0 +1,73 @@
+#!/bin/bash
+# Copyright (C) 2023 DLP Networks
+# DLP Networks PKI Management Utilities
+
+set -e
+
+if [ $# -eq 0 ]; then
+    cat <<EEE
+
+Usage: $0 OUTDIR
+
+DLP Networks PKI: $(basename $0)
+
+STEP 1:
+    Generate a certificate request that can be used with either
+    dlp-device-issuer or dlp-user-issuer.
+
+    OUTDIR should be a non-existent directory with the name equal to
+    the certificate name.
+
+    This is the first step in the certificate generation process.
+
+EEE
+    exit 1
+fi
+
+OUTDIR="$1"
+KEYNAME=`basename "$1"`
+if [ -d "$OUTDIR" ]
+then
+    echo "Error: Directory $OUTDIR already exists"
+    exit 1
+fi
+mkdir "$OUTDIR"
+
+CONFIG=`cat <<EEE
+HOME      = .
+RANDFILE  = \\$ENV::HOME/.rnd
+
+[ req ]
+default_bits            = 2048                  # RSA key size
+encrypt_key             = no                    # Protect private key
+default_md              = sha256                # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = yes                   # Prompt for DN
+distinguished_name      = identity_dn           # DN template
+req_extensions          = identity_reqext       # Desired extensions
+
+[ identity_dn ]
+organizationName                  = "Organization Name          "
+organizationName_default          = "DLP Networks"
+organizationalUnitName            = "Organizational Unit Name   "
+organizationalUnitName_default    = "DLP Networks"
+commonName                        = "Common Name                "
+commonName_default                = "$KEYNAME"
+commonName_max                    = 64
+
+[ identity_reqext ]
+keyUsage                = critical,digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyAgreement
+extendedKeyUsage        = serverAuth,clientAuth
+subjectKeyIdentifier    = hash
+EEE
+`
+openssl req -new -config <(echo "$CONFIG") \
+    -keyout "$OUTDIR/$KEYNAME.key" \
+    -out "$OUTDIR/$KEYNAME.csr"
+
+chmod 600 "$OUTDIR/$KEYNAME.key"
+echo "[DONE] Request generated! Send the following .csr file to the signing agent:"
+echo
+echo
+cat "$OUTDIR/$KEYNAME.csr"

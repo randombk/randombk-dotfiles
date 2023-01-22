@@ -1,0 +1,75 @@
+#!/bin/bash
+# Copyright (C) 2023 DLP Networks
+# DLP Networks PKI Management Utilities
+
+set -e
+
+if [ $# -eq 0 ]; then
+    cat <<EEE
+
+Usage: $0 OUTDIR
+
+DLP Networks PKI: $(basename $0)
+
+STEP 3:
+    Take a signed certificate and compute the final certificate chain.
+
+    OUTDIR should be the directory used in step 1.
+
+    This is the third step in the certificate generation process.
+
+EEE
+    exit 1
+fi
+
+OUTDIR="$1"
+KEYNAME=`basename "$1"`
+if [ ! -d "$OUTDIR" ]
+then
+    echo "Error: Directory $OUTDIR not found"
+    exit 1
+fi
+
+echo "Paste in the signed certificate"
+echo "Followed by '?'"
+read -d '?' CERT
+echo
+
+openssl x509 -in <(echo "$CERT" | sed -e 's/\s\s\s*/\n/g') -text -out "$OUTDIR/$KEYNAME.crt"
+openssl x509 -in "$OUTDIR/$KEYNAME.crt" -text -out "$OUTDIR/$KEYNAME.cer" -outform der
+
+# Fetch root certificates
+wget -4q https://pki.dlpnetworks.com/dlp-identity-root-ca.crt -O "$OUTDIR/dlp-identity-root-ca.crt"
+wget -4q https://pki.dlpnetworks.com/dlp-ssl-root-ca.crt -O "$OUTDIR/dlp-ssl-root-ca.crt"
+
+if grep -q dlp-device-issuer.crl "$OUTDIR/$KEYNAME.crt"; then
+    echo "Building cert chain for device certificate"
+    wget -4q https://pki.dlpnetworks.com/dlp-device-issuer.crt -O "$OUTDIR/dlp-device-issuer.crt"
+    cat "$OUTDIR/dlp-identity-root-ca.crt" "$OUTDIR/dlp-device-issuer.crt" "$OUTDIR/$KEYNAME.crt" > "$OUTDIR/$KEYNAME.pem"
+    openssl pkcs12 -export -name "$KEYNAME" \
+        -inkey "$OUTDIR/$KEYNAME.key" \
+        -in "$OUTDIR/$KEYNAME.crt" \
+        -certfile <(cat "$OUTDIR/dlp-identity-root-ca.crt" "$OUTDIR/dlp-device-issuer.crt") \
+        -out "$OUTDIR/$KEYNAME.p12"
+    chmod 600 "$OUTDIR/$KEYNAME.p12"
+fi
+
+if grep -q dlp-user-issuer.crl "$OUTDIR/$KEYNAME.crt"; then
+    echo "Building cert chain for user certificate"
+    wget -4q https://pki.dlpnetworks.com/dlp-user-issuer.crt -O "$OUTDIR/dlp-user-issuer.crt"
+    cat "$OUTDIR/dlp-identity-root-ca.crt" "$OUTDIR/dlp-user-issuer.crt" "$OUTDIR/$KEYNAME.crt" > "$OUTDIR/$KEYNAME.pem"
+    openssl pkcs12 -export -name "$KEYNAME" \
+        -inkey "$OUTDIR/$KEYNAME.key" \
+        -in "$OUTDIR/$KEYNAME.crt" \
+        -certfile <(cat "$OUTDIR/dlp-identity-root-ca.crt" "$OUTDIR/dlp-user-issuer.crt") \
+        -out "$OUTDIR/$KEYNAME.p12"
+    chmod 600 "$OUTDIR/$KEYNAME.p12"
+fi
+
+if grep -q dlp-ssl-issuer.crl "$OUTDIR/$KEYNAME.crt"; then
+    echo "Building cert chain for ssl certificate"
+    echo "WIP: Not Implemented"
+fi
+
+rm -f "$OUTDIR/$KEYNAME.csr"
+echo "[DONE] Certificate generation complete!"
