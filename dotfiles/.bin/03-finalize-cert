@@ -45,7 +45,7 @@ wget -4q https://pki.dlpnetworks.com/dlp-ssl-root-ca.crt -O "$OUTDIR/dlp-ssl-roo
 if grep -q dlp-device-issuer.crl "$OUTDIR/$KEYNAME.crt"; then
     echo "Building cert chain for device certificate"
     wget -4q https://pki.dlpnetworks.com/dlp-device-issuer.crt -O "$OUTDIR/dlp-device-issuer.crt"
-    cat "$OUTDIR/dlp-identity-root-ca.crt" "$OUTDIR/dlp-device-issuer.crt" "$OUTDIR/$KEYNAME.crt" > "$OUTDIR/$KEYNAME.pem"
+    cat "$OUTDIR/$KEYNAME.crt" "$OUTDIR/dlp-device-issuer.crt" "$OUTDIR/dlp-identity-root-ca.crt" > "$OUTDIR/$KEYNAME.pem"
     openssl pkcs12 -export -name "$KEYNAME" \
         -inkey "$OUTDIR/$KEYNAME.key" \
         -in "$OUTDIR/$KEYNAME.crt" \
@@ -57,7 +57,7 @@ fi
 if grep -q dlp-user-issuer.crl "$OUTDIR/$KEYNAME.crt"; then
     echo "Building cert chain for user certificate"
     wget -4q https://pki.dlpnetworks.com/dlp-user-issuer.crt -O "$OUTDIR/dlp-user-issuer.crt"
-    cat "$OUTDIR/dlp-identity-root-ca.crt" "$OUTDIR/dlp-user-issuer.crt" "$OUTDIR/$KEYNAME.crt" > "$OUTDIR/$KEYNAME.pem"
+    cat "$OUTDIR/$KEYNAME.crt" "$OUTDIR/dlp-user-issuer.crt" "$OUTDIR/dlp-identity-root-ca.crt" > "$OUTDIR/$KEYNAME.pem"
     openssl pkcs12 -export -name "$KEYNAME" \
         -inkey "$OUTDIR/$KEYNAME.key" \
         -in "$OUTDIR/$KEYNAME.crt" \
