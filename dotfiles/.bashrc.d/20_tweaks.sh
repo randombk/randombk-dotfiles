@@ -28,4 +28,4 @@ export PAGER="less"
 export VISUAL="vim"
 
 # User-local binaries
-PATH="~/bin:~/.bin:$PATH"
+PATH="~/bin:~/.bin:~/.local/bin:$PATH"
