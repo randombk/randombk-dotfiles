@@ -5,7 +5,6 @@
 "
 
 
-
 syntax on
 colorscheme desert
 
@@ -14,7 +13,6 @@ set clipboard=unnamed "Use OS clipboard
 set wildmenu          "Better completion
 set ttyfast           "Faster terminal connections
 
-
 "Searching
 set incsearch     "Turn on incremental searching
 set ignorecase    "Ignore case when searching
@@ -22,7 +20,6 @@ set smartcase     "Ignore case when typing lowercase,
                    "otherwise match case
 set scrolloff=2   "Keep 2 lines of code before & after the cursor
 
-set autoindent    "Automatic line indentation
 set tabstop=4     "Set tab character to 4 characters
 set expandtab     "Turn tabs into whitespace
 set shiftwidth=4  "Indent width for autoindent
@@ -30,6 +27,9 @@ set shiftwidth=4  "Indent width for autoindent
 " Enable per-directory .vimrc files and disable unsafe commands in them
 set exrc
 set secure
+
+" Move .viminfo file somewhere that's cleared on reboot
+let &viminfofile = '/tmp/'..$USER..'.viminfo'
 
 "Shortcut to auto indent entire file
 nmap <F11> 1G=G
