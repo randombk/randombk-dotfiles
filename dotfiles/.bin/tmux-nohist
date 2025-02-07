@@ -1,0 +1,4 @@
+#!/bin/bash
+SESSION_NAME="$(basename `pwd`)"
+tmux new-session -s "$SESSION_NAME" "HISTFILE=/dev/null bash" \; set-option -t "$SESSION_NAME" default-command "HISTFILE=/dev/null bash" 
+
