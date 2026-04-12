@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# snapper-delete-file
+# Must be run from inside a Snapper .snapshots directory.
+# Usage (dry-run):  snapper-delete-file path/to/target
+#         (live):  snapper-delete-file --run path/to/target
+# ---------------------------------------------------------------------------
+
+SCRIPT_NAME="$(basename "$0")"
+CWD="$(pwd)"
+
+# ── Argument parsing ────────────────────────────────────────────────────────
+DRY_RUN=true
+TARGET=""
+
+usage() {
+    echo "Usage:"
+    echo "  Dry-run : $SCRIPT_NAME path/to/file/or/folder"
+    echo "  Execute : $SCRIPT_NAME --run path/to/file/or/folder"
+    exit 1
+}
+
+if [[ $# -eq 1 ]]; then
+    [[ "$1" == "--run" ]] && { echo "Error: --run requires a target path."; usage; }
+    TARGET="$1"
+elif [[ $# -eq 2 ]]; then
+    [[ "$1" != "--run" ]] && { echo "Error: unexpected argument '$1'."; usage; }
+    DRY_RUN=false
+    TARGET="$2"
+else
+    usage
+fi
+
+# Strip leading slashes / dot-slashes so the path is purely relative
+TARGET="${TARGET#./}"
+TARGET="${TARGET#/}"
+
+if [[ -z "$TARGET" ]]; then
+    echo "Error: target path must not be empty."
+    usage
+fi
+
+# ── Sanity checks ───────────────────────────────────────────────────────────
+if [[ "$(basename "$CWD")" != ".snapshots" ]]; then
+    echo "Error: this script must be invoked from a directory named '.snapshots'."
+    echo "Current directory: $CWD"
+    exit 1
+fi
+
+if [[ $EUID -ne 0 ]]; then
+    echo "Error: this script must be run as root (btrfs property changes require root)."
+    exit 1
+fi
+
+# ── Discover snapshots ───────────────────────────────────────────────────────
+# Snapper layout:  .snapshots/<id>/snapshot/
+mapfile -t SNAPSHOT_DIRS < <(
+    find "$CWD" -mindepth 2 -maxdepth 2 -type d -name snapshot \
+    | sort -t/ -k$(( $(echo "$CWD" | tr -cd '/' | wc -c) + 2 ))n
+)
+
+if [[ ${#SNAPSHOT_DIRS[@]} -eq 0 ]]; then
+    echo "No snapshots found under $CWD"
+    exit 0
+fi
+
+# ── Collect hits ─────────────────────────────────────────────────────────────
+declare -a HIT_SNAPSHOTS=()   # snapshot subvolume paths that contain the target
+declare -a HIT_TARGETS=()     # full path to the target inside each snapshot
+
+for SNAP_DIR in "${SNAPSHOT_DIRS[@]}"; do
+    SNAP_ID="$(basename "$(dirname "$SNAP_DIR")")"
+    FULL_TARGET="$SNAP_DIR/$TARGET"
+
+    if [[ -e "$FULL_TARGET" || -L "$FULL_TARGET" ]]; then
+        HIT_SNAPSHOTS+=("$SNAP_DIR")
+        HIT_TARGETS+=("$FULL_TARGET")
+    fi
+done
+
+if [[ ${#HIT_SNAPSHOTS[@]} -eq 0 ]]; then
+    echo "Target not found in any snapshot: $TARGET"
+    exit 0
+fi
+
+# ── Report ───────────────────────────────────────────────────────────────────
+if $DRY_RUN; then
+    echo "DRY-RUN — the following snapshots contain '$TARGET':"
+    echo
+fi
+
+for i in "${!HIT_SNAPSHOTS[@]}"; do
+    SNAP_DIR="${HIT_SNAPSHOTS[$i]}"
+    SNAP_ID="$(basename "$(dirname "$SNAP_DIR")")"
+    printf '[%s] %s\n' "$SNAP_ID" "${HIT_TARGETS[$i]}"
+done
+
+# ── Dry-run exit ─────────────────────────────────────────────────────────────
+if $DRY_RUN; then
+    echo
+    echo "$(( ${#HIT_SNAPSHOTS[@]} )) snapshot(s) affected."
+    echo
+    echo "To apply the changes, re-run with --run:"
+    echo "  ./$SCRIPT_NAME --run $TARGET"
+    exit 0
+fi
+
+# ── Live execution ───────────────────────────────────────────────────────────
+echo
+echo "Proceeding to delete '$TARGET' from ${#HIT_SNAPSHOTS[@]} snapshot(s)…"
+echo
+
+ERRORS=0
+
+for i in "${!HIT_SNAPSHOTS[@]}"; do
+    SNAP_DIR="${HIT_SNAPSHOTS[$i]}"
+    SNAP_ID="$(basename "$(dirname "$SNAP_DIR")")"
+    FULL_TARGET="${HIT_TARGETS[$i]}"
+
+    echo "──────────────────────────────────────────"
+    echo "Snapshot [$SNAP_ID]: $SNAP_DIR"
+
+    # 1. Make subvolume read-write
+    echo "  → Setting read-write…"
+    if ! btrfs property set -ts "$SNAP_DIR" ro false; then
+        echo "  ✗ Failed to set read-write. Skipping." >&2
+        (( ERRORS++ )) || true
+        continue
+    fi
+
+    # 2. Delete the target
+    echo "  → Removing: $FULL_TARGET"
+    if ! rm -rf "$FULL_TARGET"; then
+        echo "  ✗ Failed to remove target. Will still restore read-only." >&2
+        (( ERRORS++ )) || true
+    fi
+
+    # 3. Restore read-only (always attempt, even if rm failed)
+    echo "  → Restoring read-only…"
+    if ! btrfs property set -ts "$SNAP_DIR" ro true; then
+        echo "  ✗ Failed to restore read-only on [$SNAP_ID]! Manual intervention needed." >&2
+        (( ERRORS++ )) || true
+    else
+        echo "  ✓ Done."
+    fi
+done
+
+echo "──────────────────────────────────────────"
+echo
+
+if [[ $ERRORS -eq 0 ]]; then
+    echo "All ${#HIT_SNAPSHOTS[@]} snapshot(s) processed successfully."
+else
+    echo "Completed with $ERRORS error(s). Review output above."
+    exit 1
+fi
