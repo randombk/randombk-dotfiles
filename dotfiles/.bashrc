@@ -5,17 +5,9 @@
 #
 # Configuration Detection
 #
-export IS_AGENT=false
-[[ -n "$HERMES_HOME" ]] && export IS_AGENT=true
 
-# If not running interactively, don't do anything (unless we are an agent)
-if [ -z "$PS1" ] && [ "$IS_AGENT" = false ]; then
-    return
-fi
-
-if [ "$IS_AGENT" = true ]; then
-    export SHELL=/bin/bash
-fi
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
 
 # Skip if not using bash
 [[ -n "${BASH_VERSION}" ]] || return
@@ -64,3 +56,4 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
+
