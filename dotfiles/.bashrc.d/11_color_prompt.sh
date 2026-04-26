@@ -36,16 +36,15 @@ export LSCOLORS=ExFxCxDxBxegedabagacad
 # use color where possible
 export force_color_prompt=yes
 
-# Full prompt: same structure for user and agent; non-root agent uses dark blue for \u (0;34) vs user white (0;37)
 if [[ "${BASHRC_MODE:-}" == user_interactive || "${BASHRC_MODE:-}" == agent_interactive ]]; then
     if $_isroot; then
         export PS1='\[\033[1;32m\](\[\033[1;32m\]\u\[\033[1;31m\]@\h\[\033[1;31m\]:\[\033[1;36m\]\w\[\033[1;32m\])\[\033[1;36m\]\$ \[\033[0;37m\]'
         export PS2='#->'
     elif [[ "${BASHRC_MODE:-}" == agent_interactive ]]; then
-        export PS1='\[\033[0;34m\](\[\033[0;34m\]\u\[\033[0;34m\]@\h\[\033[0;34m\]:\[\033[1;36m\]\w\[\033[0;34m\])\[\033[1;36m\]\$ \[\033[0;37m\]'
+        export PS1='\[\033[1;34m\](\[\033[0;37m\]\u\[\033[1;34m\]@\h\[\033[1;34m\]:\[\033[1;36m\]\w\[\033[1;34m\])\[\033[1;36m\]\$ \[\033[0;37m\]'
         export PS2='-->'
     else
-        export PS1='\[\033[0;34m\](\[\033[0;37m\]\u\[\033[0;34m\]@\h\[\033[0;34m\]:\[\033[1;36m\]\w\[\033[0;34m\])\[\033[1;36m\]\$ \[\033[0;37m\]'
+        export PS1='\[\033[1;31m\](\[\033[0;37m\]\u\[\033[1;31m\]@\h\[\033[1;31m\]:\[\033[1;36m\]\w\[\033[1;31m\])\[\033[1;36m\]\$ \[\033[0;37m\]'
         export PS2='-->'
     fi
 fi
