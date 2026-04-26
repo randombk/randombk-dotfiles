@@ -4,6 +4,9 @@
 # Large portions taken from http://tldp.org/LDP/abs/html/sample-bashrc.html
 #
 
+# Tab completion is only useful in interactive shells; skip for agent_headless.
+[[ $- == *i* ]] || return
+
 if ! shopt -oq posix; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
