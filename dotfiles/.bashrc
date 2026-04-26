@@ -6,11 +6,39 @@
 # Configuration Detection
 #
 
-# If not running interactively, don't do anything
-[ -z "$PS1" ] && return
-
 # Skip if not using bash
 [[ -n "${BASH_VERSION}" ]] || return
+
+# Explicit agent detection (Hermes, Cursor Agent terminal, etc.)
+IS_AGENT=false
+[[ -n "${HERMES_HOME:-}" ]] && IS_AGENT=true
+[[ -n "${CURSOR_AGENT:-}" ]] && IS_AGENT=true
+export IS_AGENT
+
+# Shell session class:
+#   - user_interactive: human at a TTY
+#   - agent_interactive: agent with an interactive shell
+#   - agent_headless: agent non-interactive (e.g. PS1 unset); still source for PATH/env
+#   - skip: non-interactive and not an agent — bail out
+if [[ $- == *i* ]]; then
+    if [[ "$IS_AGENT" == true ]]; then
+        BASHRC_MODE=agent_interactive
+    else
+        BASHRC_MODE=user_interactive
+    fi
+else
+    if [[ "$IS_AGENT" == true ]]; then
+        BASHRC_MODE=agent_headless
+    else
+        return
+    fi
+fi
+export BASHRC_MODE
+
+# Normalize SHELL for agent sessions; leave user_interactive as parent set it
+if [[ "$BASHRC_MODE" == agent_interactive || "$BASHRC_MODE" == agent_headless ]]; then
+    export SHELL=/bin/bash
+fi
 
 # Detect platform
 export _islinux=false
