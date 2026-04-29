@@ -38,6 +38,8 @@ export BASHRC_MODE
 # Normalize SHELL for agent sessions; leave user_interactive as parent set it
 if [[ "$BASHRC_MODE" == agent_interactive || "$BASHRC_MODE" == agent_headless ]]; then
     export SHELL=/bin/bash
+    [[ -z "$USER" ]] && export USER=$(id -un)
+    [[ -z "$XDG_RUNTIME_DIR" ]] && export XDG_RUNTIME_DIR=/run/user/$(id -u)
 fi
 
 # Detect platform
