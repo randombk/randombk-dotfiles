@@ -3,5 +3,9 @@
 
 export ANTHROPIC_BASE_URL=https://api.dlp.network/v1/llm/default_agentic
 export CLAUDE_CODE_OAUTH_TOKEN="$(cat ~/.claude/dlp-spac)"
+# Improve prompt-cache hit rates, disable telemetry, and strip cloud creds from subprocess envs
+export CLAUDE_CODE_ATTRIBUTION_HEADER="0"
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+export CLAUDE_CODE_SUBPROCESS_ENV_SCRUB="1"
 
 exec claude "$@"
